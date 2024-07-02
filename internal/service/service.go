@@ -50,7 +50,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response(w, http.StatusCreated, nil)
+	response(w, http.StatusCreated, newFurniture)
 }
 
 func (s *Service) Get(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +61,7 @@ func (s *Service) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	furniture := repository.Get(uint32(id), &s.JSONDB)
+	furniture := repository.Get(int64(id), &s.JSONDB)
 	if furniture == nil {
 		response(w, http.StatusNoContent, nil)
 	}
@@ -102,11 +102,11 @@ func (s *Service) Update(w http.ResponseWriter, r *http.Request) {
 		Length:     req.Length,
 	}
 
-	if err := repository.Update(uint32(id), &s.JSONDB, &newFurniture); err != nil {
+	if err := repository.Update(int64(id), &s.JSONDB, &newFurniture); err != nil {
 		responseError(w, http.StatusNoContent, err)
 	}
 
-	response(w, http.StatusOK, nil)
+	response(w, http.StatusOK, newFurniture)
 }
 
 func (s *Service) Patch(w http.ResponseWriter, r *http.Request) {
@@ -132,11 +132,11 @@ func (s *Service) Patch(w http.ResponseWriter, r *http.Request) {
 		Length:     req.Length,
 	}
 
-	if err := repository.Patch(uint32(id), &s.JSONDB, &newFurniture); err != nil {
+	if err := repository.Patch(int64(id), &s.JSONDB, &newFurniture); err != nil {
 		responseError(w, http.StatusNoContent, err)
 	}
 
-	response(w, http.StatusOK, nil)
+	response(w, http.StatusNoContent, nil)
 }
 
 func (s *Service) Delete(w http.ResponseWriter, r *http.Request) {
@@ -147,11 +147,11 @@ func (s *Service) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := repository.Delete(uint32(id), &s.JSONDB); err != nil {
+	if err := repository.Delete(int64(id), &s.JSONDB); err != nil {
 		responseError(w, http.StatusNoContent, err)
 	}
 
-	response(w, http.StatusOK, nil)
+	response(w, http.StatusNoContent, nil)
 }
 
 func response(w http.ResponseWriter, code int, data any) {

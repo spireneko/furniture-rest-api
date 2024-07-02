@@ -14,7 +14,7 @@ type JSONDB struct {
 }
 
 type FurnitureJSON struct {
-	LastID         uint32            `json:"last_id"`
+	LastID         int64             `json:"last_id"`
 	FurnitureArray []model.Furniture `json:"furniture_array"`
 }
 
@@ -55,7 +55,7 @@ func Create(data *model.Furniture, db *JSONDB) error {
 	return updateDB(db)
 }
 
-func Get(id uint32, db *JSONDB) *model.Furniture {
+func Get(id int64, db *JSONDB) *model.Furniture {
 	for _, furniture := range db.FurnitureJSON.FurnitureArray {
 		if furniture.ID == id {
 			return &furniture
@@ -65,12 +65,12 @@ func Get(id uint32, db *JSONDB) *model.Furniture {
 	return nil
 }
 
-func Update(id uint32, db *JSONDB, newFurniture *model.Furniture) error {
+func Update(id int64, db *JSONDB, newFurniture *model.Furniture) error {
 	for index, furniture := range db.FurnitureJSON.FurnitureArray {
 		if furniture.ID == id {
-			tmp := db.FurnitureJSON.FurnitureArray[index].ID
+			newFurniture.ID = db.FurnitureJSON.FurnitureArray[index].ID
 			db.FurnitureJSON.FurnitureArray[index] = *newFurniture
-			db.FurnitureJSON.FurnitureArray[index].ID = tmp
+
 			return updateDB(db)
 		}
 	}
@@ -78,7 +78,7 @@ func Update(id uint32, db *JSONDB, newFurniture *model.Furniture) error {
 	return nil
 }
 
-func Patch(id uint32, db *JSONDB, newFurniture *model.Furniture) error {
+func Patch(id int64, db *JSONDB, newFurniture *model.Furniture) error {
 	for index, furniture := range db.FurnitureJSON.FurnitureArray {
 		if furniture.ID == id {
 			if len(newFurniture.Name) > 0 {
@@ -104,7 +104,7 @@ func Patch(id uint32, db *JSONDB, newFurniture *model.Furniture) error {
 	return nil
 }
 
-func Delete(id uint32, db *JSONDB) error {
+func Delete(id int64, db *JSONDB) error {
 	for index, furniture := range db.FurnitureJSON.FurnitureArray {
 		if furniture.ID == id {
 			db.FurnitureJSON.FurnitureArray = append(db.FurnitureJSON.FurnitureArray[:index], db.FurnitureJSON.FurnitureArray[index+1:]...)

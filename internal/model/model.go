@@ -1,7 +1,7 @@
 package model
 
 type Furniture struct {
-	ID         uint32 `json:"id"`
+	ID         int64  `json:"id"`
 	Name       string `json:"name"`
 	Fabricator string `json:"fabricator"`
 	Height     uint32 `json:"height"`
