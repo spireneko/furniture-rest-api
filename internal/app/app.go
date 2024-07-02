@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/spireneko/furniture-rest-api/internal/app/service"
+	"github.com/spireneko/furniture-rest-api/internal/service"
 )
 
 func Run(port string) error {
-	handler := new(service.Service)
+	handler := service.NewService("database.json")
 
 	router := http.NewServeMux()
 

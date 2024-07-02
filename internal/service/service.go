@@ -5,9 +5,19 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/spireneko/furniture-rest-api/internal/model"
+	"github.com/spireneko/furniture-rest-api/internal/repository"
 )
 
 type Service struct {
+	JSONDB repository.JSONDB
+}
+
+func NewService(path string) Service {
+	return Service{
+		JSONDB: repository.NewJSONDB(path),
+	}
 }
 
 type CreateRequest struct {
@@ -26,16 +36,21 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Body.Close()
 
-	response(w, http.StatusCreated, nil)
-}
+	newFurniture := model.Furniture{
+		Name:       req.Name,
+		Fabricator: req.Fabricator,
+		Height:     req.Height,
+		Width:      req.Width,
+		Length:     req.Length,
+	}
 
-type GetResponse struct {
-	ID         uint32 `json:"id"`
-	Name       string `json:"name"`
-	Fabricator string `json:"fabricator"`
-	Height     uint32 `json:"height"`
-	Width      uint32 `json:"width"`
-	Length     uint32 `json:"length"`
+	if err := repository.Create(&newFurniture, &s.JSONDB); err != nil {
+		responseError(w, http.StatusInternalServerError, err)
+		log.Printf("Error while adding data to db:%s", err)
+		return
+	}
+
+	response(w, http.StatusCreated, nil)
 }
 
 func (s *Service) Get(w http.ResponseWriter, r *http.Request) {
@@ -46,14 +61,22 @@ func (s *Service) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = id
+	furniture := repository.Get(uint32(id), &s.JSONDB)
+	if furniture == nil {
+		response(w, http.StatusNoContent, nil)
+	}
 
-	response(w, http.StatusOK, nil)
+	response(w, http.StatusOK, furniture)
 }
 
 func (s *Service) GetAll(w http.ResponseWriter, r *http.Request) {
+	arr := &s.JSONDB.FurnitureJSON.FurnitureArray
+	if len(*arr) > 0 {
+		response(w, http.StatusOK, *arr)
+		return
+	}
 
-	response(w, http.StatusOK, nil)
+	response(w, http.StatusNoContent, nil)
 }
 
 func (s *Service) Update(w http.ResponseWriter, r *http.Request) {
@@ -71,9 +94,19 @@ func (s *Service) Update(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Body.Close()
 
-	_ = id
+	newFurniture := model.Furniture{
+		Name:       req.Name,
+		Fabricator: req.Fabricator,
+		Height:     req.Height,
+		Width:      req.Width,
+		Length:     req.Length,
+	}
 
-	response(w, http.StatusNoContent, nil)
+	if err := repository.Update(uint32(id), &s.JSONDB, &newFurniture); err != nil {
+		responseError(w, http.StatusNoContent, err)
+	}
+
+	response(w, http.StatusOK, nil)
 }
 
 func (s *Service) Patch(w http.ResponseWriter, r *http.Request) {
@@ -91,9 +124,19 @@ func (s *Service) Patch(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Body.Close()
 
-	_ = id
+	newFurniture := model.Furniture{
+		Name:       req.Name,
+		Fabricator: req.Fabricator,
+		Height:     req.Height,
+		Width:      req.Width,
+		Length:     req.Length,
+	}
 
-	response(w, http.StatusNoContent, nil)
+	if err := repository.Patch(uint32(id), &s.JSONDB, &newFurniture); err != nil {
+		responseError(w, http.StatusNoContent, err)
+	}
+
+	response(w, http.StatusOK, nil)
 }
 
 func (s *Service) Delete(w http.ResponseWriter, r *http.Request) {
@@ -104,9 +147,11 @@ func (s *Service) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = id
+	if err := repository.Delete(uint32(id), &s.JSONDB); err != nil {
+		responseError(w, http.StatusNoContent, err)
+	}
 
-	response(w, http.StatusNoContent, nil)
+	response(w, http.StatusOK, nil)
 }
 
 func response(w http.ResponseWriter, code int, data any) {
