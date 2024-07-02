@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -27,6 +28,11 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Body.Close()
+
+	if req.HasEmptyFields() {
+		responseError(w, http.StatusBadRequest, errors.New("not enough fields to create entity"))
+		return
+	}
 
 	if err := repository.Create(req, &s.JSONDB); err != nil {
 		responseError(w, http.StatusInternalServerError, err)
@@ -77,6 +83,11 @@ func (s *Service) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Body.Close()
+
+	if req.HasEmptyFields() {
+		responseError(w, http.StatusBadRequest, errors.New("not enough fields to update entity"))
+		return
+	}
 
 	if err := repository.Update(int64(id), &s.JSONDB, req); err != nil {
 		responseError(w, http.StatusNoContent, err)
